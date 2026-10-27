@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jutti Crafts | Authentic Handcrafted Footwear</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            500: '#f43f5e',
+                            800: '#9f1239', 
+                            900: '#881337',
+                        },
+                        gold: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                        },
+                        cream: '#fdfbf7'
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Animations */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+        
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .reveal-delay-1 { transition-delay: 100ms; }
+        .reveal-delay-2 { transition-delay: 200ms; }
+        .reveal-delay-3 { transition-delay: 300ms; }
+
+        /* Carousel Hide Scrollbar */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Toast Animation */
+        @keyframes slideInUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        .toast-enter { animation: slideInUp 0.3s ease-out forwards; }
+        .toast-exit { animation: fadeOut 0.3s ease-out forwards; }
+
+        .product-card:focus-visible,
+        .product-detail-page button:focus-visible,
+        .product-detail-page a:focus-visible {
+            outline: 3px solid #d97706;
+            outline-offset: 3px;
+        }
+        .product-detail-gallery {
+            aspect-ratio: 1 / 1;
+            height: min(76vw, 600px);
+            min-height: 320px;
+            max-height: 600px;
+        }
+        .product-detail-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transition: transform 250ms ease;
+        }
+        @media (hover: hover) and (pointer: fine) {
+            .product-detail-gallery:hover .product-detail-image { transform: scale(1.025); }
+        }
+        .product-size-option[aria-pressed="true"] {
+            border-color: #881337;
+            background: #881337;
+            color: white;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .product-detail-image { transition: none; }
+            .product-detail-gallery:hover .product-detail-image { transform: none; }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Form styling */
+        .custom-radio:checked + div {
+            border-color: #881337;
+            background-color: #fff1f2;
+        }
+        .custom-radio:checked + div .radio-dot {
+            background-color: #881337;
+            border-color: #881337;
+        }
+
+        /* Print Styles for Invoice */
+        @media print {
+            body > *:not(#invoice-modal) {
+                display: none !important;
+            }
+            #invoice-modal {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white !important;
+                display: block !important;
+                overflow: visible !important;
+                box-shadow: none !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-cream text-gray-800 font-sans antialiased overflow-x-hidden">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-40 transition-all duration-300 bg-cream/90 backdrop-blur-md border-b border-gray-100" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="#home" class="font-serif text-2xl font-bold text-brand-900 tracking-wide">JuttiCrafts.</a>
+                </div>
+                
+                <div class="hidden md:flex space-x-8 items-center">
+                    <a href="#home" class="text-gray-600 hover:text-brand-800 font-medium transition">Home</a>
+                    <a href="#collection" class="text-gray-600 hover:text-brand-800 font-medium transition">Collection</a>
+                    <a href="#about" class="text-gray-600 hover:text-brand-800 font-medium transition">Heritage</a>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <button onclick="toggleCart()" class="relative p-2 text-gray-600 hover:text-brand-800 transition">
+                        <i class="ph ph-shopping-bag text-2xl"></i>
+                        <span id="cart-badge" class="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-gold-600 rounded-full hidden">0</span>
+                    </button>
+                    <button class="md:hidden p-2 text-gray-600">
+                        <i class="ph ph-list text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dedicated Product Page -->
+    <main id="product-detail-page" tabindex="-1" aria-labelledby="product-detail-name" class="product-detail-page hidden min-h-screen bg-cream pb-24 pt-24 sm:pb-12">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <nav aria-label="Breadcrumb" class="mb-5 text-sm text-gray-500">
+                <ol class="flex flex-wrap items-center gap-2">
+                    <li><a href="#home" class="hover:text-brand-900">Home</a></li>
+                    <li aria-hidden="true">/</li>
+                    <li><a href="#collection" class="hover:text-brand-900">Collection</a></li>
+                    <li aria-hidden="true">/</li>
+                    <li id="product-detail-breadcrumb-category"></li>
+                    <li aria-hidden="true">/</li>
+                    <li id="product-detail-breadcrumb-name" class="font-medium text-gray-800" aria-current="page"></li>
+                </ol>
+            </nav>
+            <a id="product-detail-back" href="#collection" class="mb-6 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-brand-900 hover:text-brand-800">
+                <i class="ph ph-arrow-left" aria-hidden="true"></i> Back to Collection
+            </a>
+
+            <div class="grid gap-8 lg:grid-cols-12 lg:items-start lg:gap-12">
+                <div class="lg:col-span-7">
+                    <div class="product-detail-gallery relative mx-auto flex w-full items-center justify-center overflow-hidden rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-8">
+                        <img id="product-detail-image" class="product-detail-image" alt="">
+                        <div id="product-detail-image-fallback" class="hidden px-8 py-16 text-center text-gray-500" role="status">This product image is currently unavailable.</div>
+                        <span id="product-detail-category-badge" class="absolute left-4 top-4 rounded-full bg-cream px-3 py-1 text-xs font-semibold uppercase tracking-wider text-brand-900"></span>
+                    </div>
+                </div>
+                <section class="lg:col-span-5" aria-labelledby="product-detail-name">
+                    <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-7">
+                        <p class="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-gold-600">JuttiCrafts · <span id="product-detail-eyebrow-category"></span></p>
+                        <h1 id="product-detail-name" class="font-serif text-2xl font-bold leading-tight text-brand-900 sm:text-3xl"></h1>
+                        <p id="product-detail-summary" class="mt-2 text-sm leading-6 text-gray-600"></p>
+                        <p id="product-detail-price" class="mt-4 text-2xl font-bold text-brand-900"></p>
+                        <p class="mt-1 text-xs text-gray-500">Inclusive of product price; shipping and GST calculated at checkout.</p>
+
+                        <fieldset class="mt-6">
+                            <legend class="mb-3 text-sm font-semibold text-gray-900">Select size <span class="font-normal text-gray-500">(UK/India)</span></legend>
+                            <div id="product-detail-sizes" class="flex flex-wrap gap-2"></div>
+                            <p id="product-detail-size-error" class="mt-2 hidden text-sm font-medium text-red-700" role="alert">Please select a size to continue.</p>
+                        </fieldset>
+
+                        <div class="mt-5 flex items-center gap-4">
+                            <span class="text-sm font-semibold text-gray-900">Quantity</span>
+                            <div class="flex items-center rounded-lg border border-gray-300">
+                                <button id="product-detail-quantity-decrease" type="button" class="min-h-11 min-w-11 rounded-l-lg text-lg hover:bg-gray-50" aria-label="Decrease quantity">−</button>
+                                <output id="product-detail-quantity" class="min-w-10 text-center text-sm font-semibold" aria-live="polite">1</output>
+                                <button id="product-detail-quantity-increase" type="button" class="min-h-11 min-w-11 rounded-r-lg text-lg hover:bg-gray-50" aria-label="Increase quantity">+</button>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <button id="product-detail-add" type="button" class="min-h-12 rounded-xl border border-brand-900 px-4 py-3 font-semibold text-brand-900 transition hover:bg-brand-50 active:scale-[0.99]">Add to Cart</button>
+                            <button id="product-detail-buy" type="button" class="min-h-12 rounded-xl bg-brand-900 px-4 py-3 font-semibold text-white shadow-sm transition hover:bg-brand-800 active:scale-[0.99]">Buy Now</button>
+                        </div>
+                        <p class="mt-4 flex items-start gap-2 text-xs leading-5 text-gray-500">
+                            <i class="ph ph-package mt-0.5 text-base text-gold-600" aria-hidden="true"></i>
+                            Shipping ₹150 and GST (5%) are calculated in the existing checkout.
+                        </p>
+                    </div>
+                </section>
+            </div>
+
+            <section class="mt-8 grid gap-4 lg:grid-cols-3" aria-label="Product information">
+                <details open class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                    <summary class="cursor-pointer font-serif text-lg font-bold text-brand-900">Description</summary>
+                    <p id="product-detail-description" class="mt-3 text-sm leading-7 text-gray-700"></p>
+                </details>
+                <details class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                    <summary class="cursor-pointer font-serif text-lg font-bold text-brand-900">Product Highlights</summary>
+                    <ul id="product-detail-highlights" class="mt-3 space-y-2 text-sm leading-6 text-gray-700"></ul>
+                </details>
+                <details class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                    <summary class="cursor-pointer font-serif text-lg font-bold text-brand-900">Style &amp; Occasion</summary>
+                    <p id="product-detail-occasion" class="mt-3 text-sm leading-6 text-gray-700"></p>
+                    <p id="product-detail-styling" class="mt-2 text-sm leading-6 text-gray-600"></p>
+                </details>
+            </section>
+        </div>
+    </main>
+
+    <!-- Hero Section -->
+    <section id="home" class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div class="text-center lg:text-left reveal">
+                    <span class="text-gold-600 font-semibold tracking-widest uppercase text-sm mb-4 block reveal reveal-delay-1">Handcrafted Heritage</span>
+                    <h1 class="text-5xl lg:text-7xl font-serif font-bold text-brand-900 leading-tight mb-6 reveal reveal-delay-2">
+                        Step into <br> Royal Elegance
+                    </h1>
+                    <p class="text-lg text-gray-600 mb-8 max-w-lg mx-auto lg:mx-0 reveal reveal-delay-3">
+                        Authentic, hand-embroidered Punjabi Juttis designed for the modern ethnic wardrobe. Experience unparalleled comfort and timeless artistry.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start reveal reveal-delay-3">
+                        <button onclick="document.getElementById('collection').scrollIntoView()" class="bg-brand-900 text-white px-8 py-4 rounded-full font-medium hover:bg-brand-800 transition shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
+                            Explore Collection <i class="ph ph-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="relative reveal reveal-delay-2">
+                    <div class="absolute inset-0 bg-brand-100 rounded-full blur-3xl opacity-50 transform -translate-x-10 translate-y-10"></div>
+                <img src="badami-grey.png" alt="Premium Jutti" class="relative z-10 w-full rounded-2xl shadow-soft object-cover h-[500px] lg:h-[600px]">
+                    <div class="absolute -left-6 bottom-12 bg-white p-4 rounded-2xl shadow-xl z-20 flex items-center gap-4 animate-bounce" style="animation-duration: 3s;">
+                        <div class="bg-gold-100 p-3 rounded-full text-gold-600">
+                            <i class="ph ph-star-fill text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-gray-800">100% Authentic</p>
+                            <p class="text-sm text-gray-500">Hand-stitched leather</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Carousel Section -->
+    <section id="featured" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-end mb-12 reveal">
+                <div>
+                    <h2 class="text-3xl lg:text-5xl font-serif font-bold text-gray-900 mb-4">Featured Designs</h2>
+                    <p class="text-gray-500">Swipe to discover our most loved pairs.</p>
+                </div>
+                <div class="hidden md:flex gap-3">
+                    <button onclick="scrollCarousel('left')" class="p-3 rounded-full border border-gray-200 hover:bg-gray-50 hover:text-brand-900 transition">
+                        <i class="ph ph-caret-left text-xl"></i>
+                    </button>
+                    <button onclick="scrollCarousel('right')" class="p-3 rounded-full border border-gray-200 hover:bg-gray-50 hover:text-brand-900 transition">
+                        <i class="ph ph-caret-right text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="carousel-track" class="flex gap-6 overflow-x-auto snap-x snap-mandatory no-scrollbar pb-8 reveal reveal-delay-1 scroll-smooth">
+                <!-- Carousel Items injected by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Full Grid Collection Section -->
+    <section id="collection" class="py-20 bg-cream">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-16 reveal">
+                <h2 class="text-3xl lg:text-5xl font-serif font-bold text-gray-900 mb-6">The Royal Collection</h2>
+                <p class="text-gray-600">Every pair tells a story of generations of craftsmanship. Find your perfect fit for the next celebration.</p>
+            </div>
+            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Grid Items injected by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Craftsmanship Section -->
+    <section id="about" class="py-20 lg:py-32 relative bg-brand-900 text-white overflow-hidden">
+        <div class="absolute inset-0 opacity-10" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+            <i class="ph ph-needle text-5xl text-gold-400 mb-6 reveal"></i>
+            <h2 class="text-3xl lg:text-5xl font-serif font-bold mb-6 reveal reveal-delay-1">Woven With Tradition</h2>
+            <p class="text-lg lg:text-xl text-brand-100 max-w-3xl mx-auto leading-relaxed mb-12 reveal reveal-delay-2">
+                Our artisans spend up to 40 hours hand-embroidering a single pair of Juttis. Using techniques passed down through generations, we blend pure leather with silk threads, beads, and sequins to create functional art.
+            </p>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto reveal reveal-delay-3">
+                <div><h3 class="text-4xl font-serif font-bold text-gold-400 mb-2">100%</h3><p class="text-sm text-brand-100 uppercase tracking-wider">Handcrafted</p></div>
+                <div><h3 class="text-4xl font-serif font-bold text-gold-400 mb-2">40+</h3><p class="text-sm text-brand-100 uppercase tracking-wider">Hours per pair</p></div>
+                <div><h3 class="text-4xl font-serif font-bold text-gold-400 mb-2">50+</h3><p class="text-sm text-brand-100 uppercase tracking-wider">Artisans</p></div>
+                <div><h3 class="text-4xl font-serif font-bold text-gold-400 mb-2">Premium</h3><p class="text-sm text-brand-100 uppercase tracking-wider">Materials</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white pt-20 pb-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+                <div class="col-span-1 md:col-span-2">
+                    <span class="font-serif text-2xl font-bold text-white tracking-wide mb-6 block">JuttiCrafts.</span>
+                    <p class="text-gray-400 max-w-sm mb-6">Bringing the royal heritage of India to your footsteps with authentic, handcrafted footwear.</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
+                &copy; <script>document.write(new Date().getFullYear())</script> JuttiCrafts. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Slide-out Cart -->
+    <div id="cart-sidebar" class="fixed inset-y-0 right-0 w-full sm:w-[400px] bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-[60] flex flex-col">
+        <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-cream">
+            <h2 class="text-2xl font-serif font-bold text-gray-900">Your Cart</h2>
+            <button onclick="toggleCart()" class="p-2 hover:bg-gray-100 rounded-full transition">
+                <i class="ph ph-x text-xl"></i>
+            </button>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto p-6 relative">
+            <!-- Empty State -->
+            <div id="empty-cart-msg" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400 hidden">
+                <i class="ph ph-shopping-cart text-6xl mb-4 opacity-50"></i>
+                <p>Your cart is empty.</p>
+                <button onclick="toggleCart(); document.getElementById('collection').scrollIntoView();" class="mt-4 text-brand-900 font-medium hover:underline">Start Shopping</button>
+            </div>
+            <!-- Cart Items Container -->
+            <div id="cart-items-container" class="space-y-4"></div>
+        </div>
+
+        <div class="p-6 border-t border-gray-100 bg-gray-50">
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-gray-600 font-medium">Subtotal</span>
+                <span class="text-xl font-bold text-gray-900" id="cart-total">₹0</span>
+            </div>
+            <p class="text-sm text-gray-500 mb-6">Shipping and taxes calculated at checkout.</p>
+            <button onclick="openCheckout()" id="checkout-btn" disabled class="w-full bg-brand-900 text-white py-4 rounded-xl font-bold text-lg hover:bg-brand-800 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg">
+                Proceed to Checkout
+            </button>
+        </div>
+    </div>
+    <div id="cart-overlay" onclick="toggleCart()" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-[55] hidden transition-opacity opacity-0"></div>
+
+    <!-- Full-screen Checkout Modal -->
+    <div id="checkout-modal" class="fixed inset-0 bg-gray-50 z-[70] hidden overflow-y-auto">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-3xl font-serif font-bold text-gray-900">Checkout</h1>
+                <button onclick="closeCheckout()" class="text-gray-500 hover:text-gray-900 flex items-center gap-2 font-medium">
+                    <i class="ph ph-arrow-left"></i> Back to Cart
+                </button>
+            </div>
+
+            <form id="checkout-form" onsubmit="processOrder(event)" class="grid lg:grid-cols-12 gap-8">
+                <!-- Left Column: Customer & Delivery Details -->
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="ph ph-user text-brand-900"></i> Contact Information</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="sm:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                                <input type="text" id="cust-name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                                <input type="email" id="cust-email" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+                                <input type="tel" id="cust-phone" required pattern="[0-9]{10}" placeholder="10-digit mobile number" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="ph ph-map-pin text-brand-900"></i> Delivery Address</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="sm:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Complete Address</label>
+                                <textarea id="cust-address" required rows="2" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition resize-none"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                                <input type="text" id="cust-city" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
+                                <input type="text" id="cust-state" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">PIN Code</label>
+                                <input type="text" id="cust-pin" required pattern="[0-9]{6}" placeholder="6-digit PIN" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Summary & Payment -->
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h2 class="text-xl font-bold mb-4">Order Summary</h2>
+                        <div id="checkout-items" class="space-y-3 mb-6 max-h-60 overflow-y-auto pr-2">
+                            <!-- Items populated via JS -->
+                        </div>
+                        
+                        <div class="border-t border-gray-100 pt-4 space-y-3 text-sm text-gray-600">
+                            <div class="flex justify-between"><span>Subtotal</span><span id="summary-subtotal" class="font-medium text-gray-900">₹0</span></div>
+                            <div class="flex justify-between"><span>Shipping</span><span id="summary-shipping" class="font-medium text-gray-900">₹150</span></div>
+                            <div class="flex justify-between"><span>Estimated GST (5%)</span><span id="summary-gst" class="font-medium text-gray-900">₹0</span></div>
+                        </div>
+                        <div class="border-t border-gray-200 mt-4 pt-4 flex justify-between items-end">
+                            <span class="font-bold text-gray-900">Grand Total</span>
+                            <div class="text-right">
+                                <span class="text-xs text-gray-500 block mb-1">Inclusive of all taxes</span>
+                                <span id="summary-total" class="text-3xl font-bold text-brand-900">₹0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h2 class="text-xl font-bold mb-4">Payment Method</h2>
+                        <div class="space-y-3">
+                            <!-- Option 1: Razorpay -->
+                            <label class="relative block cursor-pointer group">
+                                <input type="radio" name="payment_method" value="razorpay" class="peer sr-only custom-radio" checked onchange="updateCheckoutButton()">
+                                <div class="border border-gray-200 rounded-xl p-4 flex items-center justify-between hover:bg-gray-50 transition">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-5 h-5 rounded-full border-2 border-gray-300 radio-dot flex items-center justify-center transition-colors">
+                                            <div class="w-2.5 h-2.5 rounded-full bg-white"></div>
+                                        </div>
+                                        <span class="font-medium text-gray-900">Razorpay (Cards/UPI/NetBanking)</span>
+                                    </div>
+                                    <i class="ph ph-credit-card text-xl text-gray-400 group-hover:text-brand-900 transition"></i>
+                                </div>
+                            </label>
+
+                            <!-- Option 2: UPI -->
+                            <label class="relative block cursor-pointer group">
+                                <input type="radio" name="payment_method" value="upi" class="peer sr-only custom-radio" onchange="updateCheckoutButton()">
+                                <div class="border border-gray-200 rounded-xl p-4 flex items-center justify-between hover:bg-gray-50 transition">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-5 h-5 rounded-full border-2 border-gray-300 radio-dot flex items-center justify-center transition-colors">
+                                            <div class="w-2.5 h-2.5 rounded-full bg-white"></div>
+                                        </div>
+                                        <span class="font-medium text-gray-900">Direct UPI</span>
+                                    </div>
+                                    <i class="ph ph-device-mobile text-xl text-gray-400 group-hover:text-brand-900 transition"></i>
+                                </div>
+                            </label>
+
+                            <!-- Option 3: COD -->
+                            <label class="relative block cursor-pointer group">
+                                <input type="radio" name="payment_method" value="cod" class="peer sr-only custom-radio" onchange="updateCheckoutButton()">
+                                <div class="border border-gray-200 rounded-xl p-4 flex items-center justify-between hover:bg-gray-50 transition">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-5 h-5 rounded-full border-2 border-gray-300 radio-dot flex items-center justify-center transition-colors">
+                                            <div class="w-2.5 h-2.5 rounded-full bg-white"></div>
+                                        </div>
+                                        <span class="font-medium text-gray-900">Cash on Delivery</span>
+                                    </div>
+                                    <i class="ph ph-money text-xl text-gray-400 group-hover:text-brand-900 transition"></i>
+                                </div>
+                            </label>
+                        </div>
+
+                        <button type="submit" id="checkout-submit-btn" class="w-full bg-brand-900 text-white py-4 rounded-xl font-bold text-lg hover:bg-brand-800 transition shadow-lg mt-6 flex justify-center items-center gap-2">
+                            <span>Continue to Payment</span> <i class="ph ph-lock-key"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="fixed inset-0 bg-white z-[80] hidden flex-col items-center justify-center text-center px-4 overflow-y-auto py-12">
+        <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6 text-green-600 scale-0 transition-transform duration-500" id="success-icon">
+            <i class="ph ph-check-circle text-5xl"></i>
+        </div>
+        <h2 class="text-4xl font-serif font-bold text-gray-900 mb-2">Order Confirmed!</h2>
+        <p class="text-gray-500 mb-8 max-w-md">Thank you for choosing Jutti Crafts. We are preparing your order and will notify you once it ships.</p>
+        
+        <div class="bg-gray-50 p-6 rounded-2xl w-full max-w-md mb-8 text-left border border-gray-100 shadow-sm">
+            <p class="text-sm text-gray-500 mb-1">Order Number</p>
+            <p class="font-bold text-gray-900 text-xl mb-4" id="conf-order-id">ORD-XXXXXX</p>
+            
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-gray-600">Total Amount</span>
+                <span class="font-bold text-brand-900" id="conf-total">₹0</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-gray-600">Payment Method</span>
+                <span class="font-medium text-gray-900" id="conf-method">Card</span>
+            </div>
+            <div class="mt-4 border-t border-gray-200 pt-4">
+                <p class="mb-2 text-sm font-semibold text-gray-700">Items and sizes</p>
+                <ul id="conf-items" class="space-y-1 text-sm text-gray-600"></ul>
+            </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-4">
+            <button onclick="showInvoice()" class="bg-gray-900 text-white px-8 py-3 rounded-full font-medium hover:bg-gray-800 transition flex items-center gap-2">
+                <i class="ph ph-receipt"></i> View Invoice
+            </button>
+            <button onclick="resetAndGoHome()" class="border border-gray-300 text-gray-700 px-8 py-3 rounded-full font-medium hover:bg-gray-50 transition">
+                Continue Shopping
+            </button>
+        </div>
+    </div>
+
+    <!-- Invoice Modal (Printable) -->
+    <div id="invoice-modal" class="fixed inset-0 bg-gray-50 z-[90] hidden overflow-y-auto pb-12">
+        <div class="max-w-4xl mx-auto mt-8 bg-white p-10 rounded-lg shadow-lg" id="invoice-section">
+            <!-- Action Bar (Hidden on Print) -->
+            <div class="no-print flex justify-between items-center mb-8 pb-4 border-b border-gray-200">
+                <button onclick="closeInvoice()" class="text-gray-500 hover:text-gray-900 flex items-center gap-2">
+                    <i class="ph ph-arrow-left"></i> Back
+                </button>
+                <button onclick="window.print()" class="bg-brand-900 text-white px-6 py-2 rounded-lg font-medium hover:bg-brand-800 transition flex items-center gap-2">
+                    <i class="ph ph-printer"></i> Print / Download
+                </button>
+            </div>
+
+            <!-- Invoice Content -->
+            <div class="flex justify-between items-start mb-12">
+                <div>
+                    <h1 class="text-3xl font-serif font-bold text-brand-900 mb-1">JuttiCrafts.</h1>
+                    <p class="text-gray-500 text-sm">Authentic Handcrafted Footwear</p>
+                    <p class="text-gray-500 text-sm mt-4">123 Heritage Lane, Jaipur, Rajasthan, 302001</p>
+                    <p class="text-gray-500 text-sm">hello@jutticrafts.com</p>
+                </div>
+                <div class="text-right">
+                    <h2 class="text-4xl font-bold text-gray-200 uppercase tracking-widest mb-4">Invoice</h2>
+                    <p class="text-gray-600"><span class="font-medium">Invoice No:</span> <span id="inv-id">INV-000000</span></p>
+                    <p class="text-gray-600"><span class="font-medium">Order No:</span> <span id="inv-order-id">ORD-000000</span></p>
+                    <p class="text-gray-600"><span class="font-medium">Date:</span> <span id="inv-date">DD/MM/YYYY</span></p>
+                </div>
+            </div>
+
+            <div class="mb-8 border-t border-b border-gray-100 py-6">
+                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Billed & Shipped To:</h3>
+                <p class="font-bold text-gray-900 text-lg" id="inv-name">Customer Name</p>
+                <p class="text-gray-600 mt-1" id="inv-address">Address Line 1</p>
+                <p class="text-gray-600"><span id="inv-city">City</span>, <span id="inv-state">State</span> - <span id="inv-pin">000000</span></p>
+                <p class="text-gray-600 mt-2"><i class="ph ph-phone text-gray-400 mr-1"></i> <span id="inv-phone">+91 0000000000</span></p>
+                <p class="text-gray-600"><i class="ph ph-envelope text-gray-400 mr-1"></i> <span id="inv-email">customer@example.com</span></p>
+            </div>
+
+            <table class="w-full mb-8">
+                <thead>
+                    <tr class="border-b-2 border-gray-800 text-left">
+                        <th class="py-3 font-bold text-gray-900">#</th>
+                        <th class="py-3 font-bold text-gray-900">Product Description</th>
+                        <th class="py-3 font-bold text-gray-900 text-center">Size</th>
+                        <th class="py-3 font-bold text-gray-900 text-center">Qty</th>
+                        <th class="py-3 font-bold text-gray-900 text-right">Unit Price</th>
+                        <th class="py-3 font-bold text-gray-900 text-right">Total</th>
+                    </tr>
+                </thead>
+                <tbody id="inv-items">
+                    <!-- Items inserted via JS -->
+                </tbody>
+            </table>
+
+            <div class="flex justify-end mb-8">
+                <div class="w-1/2">
+                    <div class="flex justify-between py-2 border-b border-gray-100 text-gray-600">
+                        <span>Subtotal</span>
+                        <span id="inv-subtotal" class="font-medium">₹0</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b border-gray-100 text-gray-600">
+                        <span>Shipping Charges</span>
+                        <span id="inv-shipping" class="font-medium">₹0</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b border-gray-100 text-gray-600">
+                        <span>GST (5%)</span>
+                        <span id="inv-gst" class="font-medium">₹0</span>
+                    </div>
+                    <div class="flex justify-between py-4 text-xl font-bold text-brand-900">
+                        <span>Grand Total</span>
+                        <span id="inv-total">₹0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2">Payment Details</h3>
+                <p class="text-gray-600"><span class="font-medium">Method:</span> <span id="inv-payment-method">Method</span></p>
+                <p class="text-gray-600"><span class="font-medium">Status:</span> <span id="inv-payment-status" class="text-brand-900 font-bold">Status</span></p>
+            </div>
+            
+            <div class="text-center mt-12 text-gray-400 text-sm">
+                <p>This is a computer generated invoice and does not require a signature.</p>
+                <p>Thank you for shopping with Jutti Crafts.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+
+    <script>
+        // --- Constants & Data ---
+        const SHIPPING_CHARGE = 150;
+        const GST_RATE = 0.05;
+        let currentOrderSnapshot = null; // Stores finalized order
+        let currentProductId = null;
+        let productPageTrigger = null;
+        let selectedProductSize = null;
+        let productPageQuantity = 1;
+        let collectionScrollPosition = 0;
+        let isProductPageVisible = false;
+
+        const products = [
+            {
+                id: 1, name: "Green Pearl Jutti", price: 2499, category: "Festive", image: "gereen-latkan.png", sizeOptions: [5, 6, 7, 8, 9, 10],
+                shortDescription: "A vivid green pair finished with delicate pearl-like detailing.",
+                description: "A fresh statement in bright green, this jutti pairs an ornate surface with rows of pearl-like accents that catch the eye without overpowering an outfit. Its lively color brings a festive note to classic Indian dressing, while the detailed pattern gives it enough character to stand on its own. Choose it when you want a traditional look with a confident pop of color, or let it add a thoughtful contrast to a simpler ensemble.",
+                highlights: ["Vibrant green tone with pearl-like embellishment", "Intricate decorative pattern across the upper", "A standout accent for festive wardrobes"],
+                occasion: "A natural choice for family celebrations, festive gatherings and daytime functions.",
+                stylingAdvice: "Pair it with ivory, gold or soft pastel ethnic wear, or echo the green in a dupatta or accessory."
+            },
+            {
+                id: 2, name: "Black Men's Loafer", price: 2999, category: "Everyday", image: "bold-step-tpr-black.png", sizeOptions: [6, 7, 8, 9, 10, 11],
+                shortDescription: "A clean black slip-on with a quietly polished, versatile look.",
+                description: "With a streamlined black profile and subtle perforated detailing, the Black Men's Loafer keeps its look composed and easy to style. The understated finish suits wardrobes that favor versatile pieces over elaborate decoration, moving naturally between relaxed plans and more dressed-up occasions. Its dark tone makes it a dependable pairing choice, while the small surface details give the silhouette a little extra interest up close.",
+                highlights: ["Classic black color with discreet perforated detail", "Simple silhouette that pairs easily across looks", "A restrained alternative to heavily embellished footwear"],
+                occasion: "Wear it for everyday outings, informal gatherings or occasions that call for a neat, understated finish.",
+                stylingAdvice: "Style with tailored trousers or a kurta-pajama set; keep the rest of the outfit clean and let the dark finish anchor it."
+            },
+            {
+                id: 3, name: "Thar Royal Pattern", price: 3499, category: "Bridal", image: "thar-royal.png", sizeOptions: [5, 6, 7, 8, 9, 10],
+                shortDescription: "A richly patterned jutti with the warmth of a heritage-inspired palette.",
+                description: "The Thar Royal Pattern brings together a richly detailed motif and a warm, earthy palette that feels rooted in traditional Indian style. Its decorative surface gives the pair a ceremonial presence, while the balanced pattern keeps it elegant rather than overly ornate. Designed to be noticed, it can become the defining detail of a special-occasion outfit or add a regal finish to a thoughtfully chosen festive look.",
+                highlights: ["Distinctive all-over heritage-inspired pattern", "Warm, earthy tones with a richly detailed appearance", "A statement design suited to celebratory dressing"],
+                occasion: "Consider it for weddings, engagement celebrations and evening festivities.",
+                stylingAdvice: "Wear with jewel tones, deep neutrals or traditional prints; choose one or two accessories that complement rather than compete with its pattern."
+            },
+            {
+                id: 4, name: "Royal Step Gold", price: 2299, category: "Classic", image: "badami-grey.png", sizeOptions: [5, 6, 7, 8, 9, 10],
+                shortDescription: "A dark, refined design accented by fine, pale embroidered motifs.",
+                description: "Royal Step Gold offers a composed take on occasion footwear, pairing a deep charcoal-toned base with fine, pale motifs that trace across the upper. The contrast gives the design a quietly ornamental finish while keeping its overall look versatile. It is an easy choice for someone who appreciates traditional detail in a darker palette, adding definition to an outfit without relying on a bright color or an oversized embellishment.",
+                highlights: ["Deep charcoal appearance with contrasting decorative motifs", "Detailed pattern adds interest while remaining understated", "Versatile dark palette for classic ethnic looks"],
+                occasion: "A considered option for dinners, festive visits and celebrations where subtle detail feels right.",
+                stylingAdvice: "Try it with cream, muted pink or navy outfits; small silver or antique-finish accessories can pick up the design's contrast."
+            },
+            {
+                id: 5, name: "Pink Embroidery", price: 1999, category: "Casual", image: "badami-pink.png", sizeOptions: [5, 6, 7, 8, 9, 10],
+                shortDescription: "Expressive pink floral embroidery set against a dramatic dark base.",
+                description: "Pink Embroidery makes its impression through contrast: bright pink floral motifs bloom across a dark upper, creating a playful design with plenty of personality. The repeated pattern gives the pair a lively, crafted look, while the black background keeps the color feeling grounded and wearable. It is a distinctive choice for adding a joyful accent to everyday ethnic dressing or bringing a little color to a relaxed celebration.",
+                highlights: ["Bright pink floral motifs against a dark background", "Eye-catching repeated embroidery-inspired pattern", "A colorful accent for relaxed and festive outfits"],
+                occasion: "Wear it for casual celebrations, festive afternoons or whenever an outfit could use a cheerful focal point.",
+                stylingAdvice: "Let the pink stand out with black, blush or neutral clothing, or coordinate with a single pink detail elsewhere in your look."
+            },
+            {
+                id: 6, name: "White Floral", price: 2799, category: "Festive", image: "pubjabi-floral.png", sizeOptions: [5, 6, 7, 8, 9, 10],
+                shortDescription: "A light floral design brightened with vivid, multicolored accents.",
+                description: "White Floral feels airy and celebratory, with colorful flower motifs scattered across a light base and delicate contrast around the edges. Its bright palette brings a cheerful energy to traditional footwear, making the pair especially appealing when you want pattern without a dark or heavy look. The mix of colors offers plenty of styling options, while the floral theme keeps the overall impression graceful and easygoing.",
+                highlights: ["Light base decorated with colorful floral motifs", "Bright accents bring a cheerful, occasion-ready feel", "Pattern offers several simple color-coordination options"],
+                occasion: "A lovely companion for daytime festivities, spring celebrations and family gatherings.",
+                stylingAdvice: "Pair with white, pastel or one of the floral accent colors; keep bold prints elsewhere to a minimum for a balanced outfit."
+            },
+            {
+                id: 7, name: "Black Silver", price: 3299, category: "Wedding", image: "lahariya.png", sizeOptions: [5, 6, 7, 8, 9, 10],
+                shortDescription: "An ornate dark design with intricate, warm-toned decorative patterning.",
+                description: "Black Silver is made for a more dramatic moment, with a dark, richly patterned look and intricate ornamental detailing across the upper. The design has a heritage-inspired character that feels especially at home with wedding and evening attire. Its depth and pattern create visual interest from a distance, while the carefully arranged motifs reward a closer look, making this pair a strong finishing touch for an outfit with a little ceremony.",
+                highlights: ["Dark, ornate appearance with intricate patterning", "Heritage-inspired decorative character", "A statement finish for wedding and evening wardrobes"],
+                occasion: "Choose it for wedding functions, receptions and other dressy celebrations.",
+                stylingAdvice: "Wear with a solid-color sherwani, kurta or festive ensemble so the detailed pattern remains the focal point."
+            }
+        ];
+
+        // --- Cart State Management (LocalStorage) ---
+        let cart = [];
+        
+        function initCart() {
+            const saved = localStorage.getItem('jutti_cart');
+            if (saved) {
+                try {
+                    const storedCart = JSON.parse(saved);
+                    if (!Array.isArray(storedCart)) {
+                        cart = [];
+                        localStorage.setItem('jutti_cart', JSON.stringify(cart));
+                    } else {
+                        cart = storedCart.reduce((items, storedItem) => {
+                            if (!storedItem || typeof storedItem !== 'object') return items;
+                            const product = products.find(item => item.id === Number(storedItem.id));
+                            const quantity = Number(storedItem.quantity);
+                            if (!product || !Number.isInteger(quantity) || quantity < 1) return items;
+
+                            const size = product.sizeOptions.includes(Number(storedItem.size)) ? Number(storedItem.size) : null;
+                            const cartLineId = getCartLineId(product.id, size);
+                            const existing = items.find(item => item.cartLineId === cartLineId);
+                            if (existing) existing.quantity += quantity;
+                            else items.push({ ...product, size, cartLineId, quantity });
+                            return items;
+                        }, []);
+                        if (JSON.stringify(cart) !== JSON.stringify(storedCart)) {
+                            localStorage.setItem('jutti_cart', JSON.stringify(cart));
+                        }
+                    }
+                } catch (error) {
+                    console.error('Unable to restore the saved cart.', error);
+                    cart = [];
+                }
+            }
+            updateCartUI();
+        }
+
+        function saveCart() {
+            localStorage.setItem('jutti_cart', JSON.stringify(cart));
+            updateCartUI();
+        }
+
+        // --- Formatting Helper ---
+        function formatMoney(amount) {
+            return '₹' + amount.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+        }
+
+        function getCartLineId(productId, size) {
+            return `product-${productId}-size-${size === null ? 'unspecified' : size}`;
+        }
+
+        function scrollPageTo(top) {
+            window.scrollTo({ top, behavior: 'instant' });
+        }
+
+        // --- Rendering Logic ---
+        function renderProducts() {
+            const track = document.getElementById('carousel-track');
+            const grid = document.getElementById('product-grid');
+            
+            // Render Featured (First 4)
+            products.slice(0, 4).forEach(p => {
+                track.innerHTML += `
+                    <article class="product-card min-w-[85vw] sm:min-w-[300px] snap-center shrink-0 group cursor-pointer relative overflow-hidden rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300" data-product-card data-product-id="${p.id}" tabindex="0" aria-label="View details for ${p.name}">
+                        <div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-brand-900 z-10">${p.category}</div>
+                        <img src="${p.image}" alt="${p.name}" class="w-full h-80 object-cover group-hover:scale-105 transition duration-500">
+                        <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                            <h3 class="pointer-events-auto text-white text-xl font-serif font-bold mb-1">${p.name}</h3>
+                            <p class="text-gold-400 font-medium mb-4">${formatMoney(p.price)}</p>
+                            <button type="button" data-choose-size="${p.id}" class="pointer-events-auto bg-white text-brand-900 w-full py-3 rounded-lg font-bold hover:bg-brand-50 transition transform translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 duration-300">
+                                Choose Size
+                            </button>
+                        </div>
+                    </article>
+                `;
+            });
+
+            // Render Full Grid
+            products.forEach((p, index) => {
+                const delay = (index % 4) + 1;
+                grid.innerHTML += `
+                    <article class="product-card group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 reveal reveal-delay-${delay}" data-product-card data-product-id="${p.id}" tabindex="0" aria-label="View details for ${p.name}">
+                        <div class="relative overflow-hidden">
+                            <img src="${p.image}" alt="${p.name}" class="w-full h-64 object-cover group-hover:scale-105 transition duration-500">
+                            <button type="button" data-choose-size="${p.id}" aria-label="Choose a size for ${p.name}" class="absolute bottom-4 right-4 bg-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center text-brand-900 hover:bg-brand-900 hover:text-white transition transform translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 duration-300">
+                                <i class="ph ph-ruler text-xl"></i>
+                            </button>
+                        </div>
+                        <div class="p-6 text-center">
+                            <p class="text-xs text-gray-400 uppercase tracking-widest mb-1">${p.category}</p>
+                            <h3 class="text-lg font-serif font-bold text-gray-900 mb-2 group-hover:text-brand-800 transition">${p.name}</h3>
+                            <p class="text-brand-900 font-semibold">${formatMoney(p.price)}</p>
+                        </div>
+                    </article>
+                `;
+            });
+
+            [track, grid].forEach(container => {
+                container.addEventListener('click', event => {
+                    const sizeButton = event.target.closest('[data-choose-size]');
+                    if (sizeButton && container.contains(sizeButton)) {
+                        event.stopPropagation();
+                        openProductDetails(Number(sizeButton.dataset.chooseSize), event, sizeButton);
+                        return;
+                    }
+
+                    const card = event.target.closest('[data-product-card]');
+                    if (card && container.contains(card)) {
+                        openProductDetails(Number(card.dataset.productId), event, card);
+                    }
+                });
+                container.addEventListener('keydown', event => {
+                    const card = event.target.closest('[data-product-card]');
+                    if (card && container.contains(card) &&
+                        !event.target.closest('button, a, input, select, textarea') &&
+                        (event.key === 'Enter' || event.key === ' ')) {
+                        event.preventDefault();
+                        openProductDetails(Number(card.dataset.productId), event, card);
+                    }
+                });
+            });
+        }
+
+        // --- Interaction Logic ---
+        function openProductDetails(productId, event, trigger) {
+            const product = products.find(item => item.id === productId);
+            if (!product) {
+                showToast('This product is unavailable');
+                return;
+            }
+
+            if (!isProductPageVisible) collectionScrollPosition = window.scrollY;
+            productPageTrigger = trigger || (event && event.target instanceof Element && event.target.closest('[data-product-card]'));
+            history.pushState({ productPage: true, productId, collectionScrollPosition }, '', `#product-${productId}`);
+            renderProductPage(productId);
+        }
+
+        function renderProductPage(productId) {
+            const product = products.find(item => item.id === productId);
+            if (!product) {
+                showWebsiteSections();
+                showToast('This product is unavailable');
+                return;
+            }
+
+            currentProductId = product.id;
+            if (history.state && history.state.productPage &&
+                Number.isFinite(history.state.collectionScrollPosition)) {
+                collectionScrollPosition = history.state.collectionScrollPosition;
+            }
+            selectedProductSize = null;
+            productPageQuantity = 1;
+            isProductPageVisible = true;
+
+            document.getElementById('product-detail-breadcrumb-category').textContent = product.category;
+            document.getElementById('product-detail-breadcrumb-name').textContent = product.name;
+            document.getElementById('product-detail-category-badge').textContent = product.category;
+            document.getElementById('product-detail-eyebrow-category').textContent = product.category;
+            document.getElementById('product-detail-name').textContent = product.name;
+            document.getElementById('product-detail-summary').textContent = product.shortDescription;
+            document.getElementById('product-detail-price').textContent = formatMoney(product.price);
+            document.getElementById('product-detail-description').textContent = product.description;
+            document.getElementById('product-detail-occasion').textContent = product.occasion;
+            document.getElementById('product-detail-styling').textContent = product.stylingAdvice;
+            document.getElementById('product-detail-quantity').textContent = String(productPageQuantity);
+            document.getElementById('product-detail-size-error').classList.add('hidden');
+
+            const highlights = document.getElementById('product-detail-highlights');
+            highlights.replaceChildren();
+            product.highlights.forEach(highlight => {
+                const item = document.createElement('li');
+                item.className = 'flex gap-2';
+                item.textContent = `• ${highlight}`;
+                highlights.append(item);
+            });
+
+            const sizes = document.getElementById('product-detail-sizes');
+            sizes.replaceChildren();
+            product.sizeOptions.forEach(size => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'product-size-option min-h-11 min-w-11 rounded-lg border border-gray-300 px-3 text-sm font-semibold text-gray-800 transition hover:border-brand-900';
+                button.textContent = String(size);
+                button.setAttribute('aria-pressed', 'false');
+                button.setAttribute('aria-label', `Select UK/India size ${size}`);
+                button.addEventListener('click', () => {
+                    selectedProductSize = size;
+                    sizes.querySelectorAll('.product-size-option').forEach(option => option.setAttribute('aria-pressed', String(option === button)));
+                    document.getElementById('product-detail-size-error').classList.add('hidden');
+                });
+                sizes.append(button);
+            });
+
+            const image = document.getElementById('product-detail-image');
+            const fallback = document.getElementById('product-detail-image-fallback');
+            image.hidden = false;
+            fallback.classList.add('hidden');
+            image.alt = product.name;
+            image.onerror = () => {
+                image.hidden = true;
+                fallback.classList.remove('hidden');
+            };
+            image.src = product.image;
+            showProductPageSections();
+            scrollPageTo(0);
+            requestAnimationFrame(() => document.getElementById('product-detail-page').focus({ preventScroll: true }));
+        }
+
+        function showProductPageSections() {
+            ['home', 'featured', 'collection', 'about'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            document.querySelector('footer').classList.add('hidden');
+            document.getElementById('product-detail-page').classList.remove('hidden');
+        }
+
+        function showWebsiteSections() {
+            const wasOnProductPage = isProductPageVisible;
+            isProductPageVisible = false;
+            currentProductId = null;
+            document.getElementById('product-detail-page').classList.add('hidden');
+            ['home', 'featured', 'collection', 'about'].forEach(id => document.getElementById(id).classList.remove('hidden'));
+            document.querySelector('footer').classList.remove('hidden');
+
+            if (wasOnProductPage) {
+                scrollPageTo(collectionScrollPosition);
+                if (productPageTrigger && document.contains(productPageTrigger)) {
+                    requestAnimationFrame(() => productPageTrigger.focus({ preventScroll: true }));
+                }
+            }
+            const target = location.hash.slice(1);
+            if (target && target !== 'collection' && target !== 'home' && target !== 'about') return;
+            if (target && (!wasOnProductPage || target === 'home' || target === 'about' ||
+                (target === 'collection' && collectionScrollPosition === 0))) {
+                requestAnimationFrame(() => document.getElementById(target)?.scrollIntoView());
+            }
+        }
+
+        function returnToCollection() {
+            if (history.state && history.state.productPage) {
+                history.back();
+            } else {
+                location.hash = 'collection';
+            }
+        }
+
+        function renderRouteFromLocation() {
+            const match = location.hash.match(/^#product-(\d+)$/);
+            if (match) {
+                const productId = Number(match[1]);
+                if (!isProductPageVisible || currentProductId !== productId) renderProductPage(productId);
+                return;
+            }
+            showWebsiteSections();
+        }
+
+        function validateProductSize() {
+            if (selectedProductSize !== null) return true;
+            const error = document.getElementById('product-detail-size-error');
+            error.classList.remove('hidden');
+            document.getElementById('product-detail-sizes').querySelector('.product-size-option')?.focus();
+            return false;
+        }
+
+        function purchaseSelectedProduct(buyNow) {
+            if (!currentProductId || !validateProductSize()) return;
+
+            const product = products.find(item => item.id === currentProductId);
+            if (!product) {
+                showToast('This product is unavailable');
+                return;
+            }
+
+            const cartLineId = getCartLineId(product.id, selectedProductSize);
+            const existing = cart.find(item => item.cartLineId === cartLineId);
+            if (!buyNow || !existing) {
+                const added = addToCart(product.id, selectedProductSize, productPageQuantity);
+                if (!added) return;
+            }
+            if (buyNow) openCheckout();
+        }
+
+        function scrollCarousel(direction) {
+            const track = document.getElementById('carousel-track');
+            const scrollAmount = 320; 
+            track.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
+        }
+
+        function addToCart(productId, size, quantity = 1) {
+            const product = products.find(p => p.id === productId);
+            if (!product || !product.sizeOptions.includes(Number(size))) {
+                showToast('Please select a valid footwear size');
+                return false;
+            }
+
+            const selectedSize = Number(size);
+            const cartLineId = getCartLineId(product.id, selectedSize);
+            const existing = cart.find(item => item.cartLineId === cartLineId);
+
+            if (existing) existing.quantity += quantity;
+            else cart.push({ ...product, size: selectedSize, cartLineId, quantity });
+            
+            saveCart();
+            showToast(`Added ${quantity} × ${product.name} (size ${selectedSize}) to cart`);
+            return true;
+        }
+
+        function removeFromCart(cartLineId) {
+            cart = cart.filter(item => item.cartLineId !== cartLineId);
+            saveCart();
+        }
+
+        function changeQuantity(cartLineId, delta) {
+            const item = cart.find(i => i.cartLineId === cartLineId);
+            if (item) {
+                item.quantity += delta;
+                if (item.quantity <= 0) removeFromCart(cartLineId);
+                else saveCart();
+            }
+        }
+
+        function updateCartUI() {
+            const badge = document.getElementById('cart-badge');
+            const container = document.getElementById('cart-items-container');
+            const emptyMsg = document.getElementById('empty-cart-msg');
+            const totalEl = document.getElementById('cart-total');
+            const checkoutBtn = document.getElementById('checkout-btn');
+
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            
+            if (totalItems > 0) {
+                badge.innerText = totalItems;
+                badge.classList.remove('hidden');
+                emptyMsg.classList.add('hidden');
+                container.classList.remove('hidden');
+                
+                let subtotal = 0;
+                container.innerHTML = cart.map(item => {
+                    subtotal += item.price * item.quantity;
+                    return `
+                        <div class="flex gap-4 items-center bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                            <img src="${item.image}" alt="${item.name}" class="w-20 h-20 object-contain rounded-lg bg-cream">
+                            <div class="flex-1">
+                                <h4 class="font-bold text-gray-900">${item.name}</h4>
+                                <p class="text-brand-900 font-semibold mb-2">${formatMoney(item.price)}</p>
+                                <p class="mb-2 text-xs text-gray-500">${item.size === null ? 'Size not selected' : `UK/India size: ${item.size}`}</p>
+                                <div class="flex items-center gap-3">
+                                    <button onclick="changeQuantity('${item.cartLineId}', -1)" class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition" aria-label="Decrease ${item.name} size ${item.size} quantity">-</button>
+                                    <span class="font-medium text-sm">${item.quantity}</span>
+                                    <button onclick="changeQuantity('${item.cartLineId}', 1)" class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition" aria-label="Increase ${item.name} size ${item.size} quantity">+</button>
+                                </div>
+                            </div>
+                            <button onclick="removeFromCart('${item.cartLineId}')" class="text-gray-400 hover:text-red-500 transition p-2" aria-label="Remove ${item.name} size ${item.size} from cart">
+                                <i class="ph ph-trash text-lg"></i>
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+                
+                totalEl.innerText = formatMoney(subtotal);
+                checkoutBtn.disabled = false;
+            } else {
+                badge.classList.add('hidden');
+                container.classList.add('hidden');
+                emptyMsg.classList.remove('hidden');
+                totalEl.innerText = formatMoney(0);
+                checkoutBtn.disabled = true;
+            }
+        }
+
+        function toggleCart() {
+            const sidebar = document.getElementById('cart-sidebar');
+            const overlay = document.getElementById('cart-overlay');
+            
+            if (sidebar.classList.contains('translate-x-full')) {
+                sidebar.classList.remove('translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+                document.body.style.overflow = 'hidden';
+            } else {
+                sidebar.classList.add('translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+                document.body.style.overflow = '';
+            }
+        }
+
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'bg-gray-900 text-white px-6 py-3 rounded-full shadow-xl font-medium text-sm flex items-center gap-2 toast-enter';
+            toast.innerHTML = `<i class="ph ph-check-circle text-green-400 text-lg"></i> ${message}`;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.replace('toast-enter', 'toast-exit');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // --- Checkout Flow ---
+        function calculateTotals() {
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const gst = subtotal * GST_RATE;
+            const total = subtotal + SHIPPING_CHARGE + gst;
+            return { subtotal, gst, shipping: SHIPPING_CHARGE, total };
+        }
+
+        function openCheckout() {
+            if(cart.length === 0) return;
+            const sidebar = document.getElementById('cart-sidebar');
+            if (!sidebar.classList.contains('translate-x-full')) toggleCart();
+            
+            // Populate Summary
+            const itemsContainer = document.getElementById('checkout-items');
+            itemsContainer.innerHTML = cart.map(item => `
+                <div class="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
+                    <div class="flex items-center gap-3">
+                        <img src="${item.image}" alt="${item.name}" class="w-12 h-12 rounded-lg object-contain bg-cream">
+                        <div>
+                            <p class="font-medium text-sm text-gray-900">${item.name}</p>
+                            <p class="text-xs text-gray-500">${item.size === null ? 'Size not selected' : `UK/India size: ${item.size}`}</p>
+                            <p class="text-xs text-gray-500">Qty: ${item.quantity}</p>
+                        </div>
+                    </div>
+                    <span class="font-medium text-sm text-gray-900">${formatMoney(item.price * item.quantity)}</span>
+                </div>
+            `).join('');
+
+            const totals = calculateTotals();
+            document.getElementById('summary-subtotal').innerText = formatMoney(totals.subtotal);
+            document.getElementById('summary-shipping').innerText = formatMoney(totals.shipping);
+            document.getElementById('summary-gst').innerText = formatMoney(totals.gst);
+            document.getElementById('summary-total').innerText = formatMoney(totals.total);
+
+            updateCheckoutButton();
+            
+            document.getElementById('checkout-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            window.scrollTo(0, 0);
+        }
+
+        function closeCheckout() {
+            document.getElementById('checkout-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+            toggleCart();
+        }
+
+        function updateCheckoutButton() {
+            const method = document.querySelector('input[name="payment_method"]:checked').value;
+            const btn = document.getElementById('checkout-submit-btn');
+            if (method === 'cod') {
+                btn.innerHTML = `<span>Buy Now</span> <i class="ph ph-check-circle"></i>`;
+            } else {
+                btn.innerHTML = `<span>Pay Now</span> <i class="ph ph-lock-key"></i>`;
+            }
+        }
+
+        function processOrder(e) {
+            e.preventDefault();
+            const form = document.getElementById('checkout-form');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const btn = document.getElementById('checkout-submit-btn');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<div class="spinner"></div> Processing...`;
+            btn.disabled = true;
+
+            setTimeout(() => {
+                createOrderSnapshot();
+                showConfirmation();
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }, 1500); // Simulate processing delay
+        }
+
+        function createOrderSnapshot() {
+            const totals = calculateTotals();
+            const method = document.querySelector('input[name="payment_method"]:checked').value;
+            
+            const methodDisplayMap = {
+                'cod': 'Cash on Delivery',
+                'razorpay': 'Razorpay / Online',
+                'upi': 'Direct UPI'
+            };
+
+            currentOrderSnapshot = {
+                orderId: 'ORD-' + Math.floor(100000 + Math.random() * 900000),
+                invoiceId: 'INV-' + Math.floor(100000 + Math.random() * 900000),
+                date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+                customer: {
+                    name: document.getElementById('cust-name').value,
+                    email: document.getElementById('cust-email').value,
+                    phone: document.getElementById('cust-phone').value,
+                    address: document.getElementById('cust-address').value,
+                    city: document.getElementById('cust-city').value,
+                    state: document.getElementById('cust-state').value,
+                    pin: document.getElementById('cust-pin').value,
+                },
+                items: JSON.parse(JSON.stringify(cart)), // deep copy
+                totals: totals,
+                paymentMethod: methodDisplayMap[method] || method,
+                paymentStatus: method === 'cod' ? 'Payment due on delivery' : 'Paid'
+            };
+
+            // Clear Cart
+            cart = [];
+            saveCart();
+        }
+
+        function showConfirmation() {
+            document.getElementById('checkout-modal').classList.add('hidden');
+            const confModal = document.getElementById('confirmation-modal');
+            
+            document.getElementById('conf-order-id').innerText = currentOrderSnapshot.orderId;
+            document.getElementById('conf-total').innerText = formatMoney(currentOrderSnapshot.totals.total);
+            document.getElementById('conf-method').innerText = currentOrderSnapshot.paymentMethod;
+            const confirmationItems = document.getElementById('conf-items');
+            confirmationItems.replaceChildren();
+            currentOrderSnapshot.items.forEach(item => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${item.name} · Size ${item.size === null ? 'not selected' : item.size} · Qty ${item.quantity}`;
+                confirmationItems.append(listItem);
+            });
+
+            confModal.classList.remove('hidden');
+            confModal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+            
+            setTimeout(() => {
+                document.getElementById('success-icon').classList.remove('scale-0');
+                document.getElementById('success-icon').classList.add('scale-100');
+            }, 50);
+        }
+
+        function resetAndGoHome() {
+            document.getElementById('confirmation-modal').classList.add('hidden');
+            document.getElementById('confirmation-modal').classList.remove('flex');
+            document.getElementById('success-icon').classList.remove('scale-100');
+            document.getElementById('success-icon').classList.add('scale-0');
+            document.body.style.overflow = '';
+            document.getElementById('checkout-form').reset();
+            isProductPageVisible = false;
+            history.replaceState(null, '', `${location.pathname}${location.search}`);
+            showWebsiteSections();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- Invoice System ---
+        function showInvoice() {
+            if (!currentOrderSnapshot) return;
+            const snap = currentOrderSnapshot;
+
+            // Populate Invoice Data
+            document.getElementById('inv-id').innerText = snap.invoiceId;
+            document.getElementById('inv-order-id').innerText = snap.orderId;
+            document.getElementById('inv-date').innerText = snap.date;
+            
+            document.getElementById('inv-name').innerText = snap.customer.name;
+            document.getElementById('inv-address').innerText = snap.customer.address;
+            document.getElementById('inv-city').innerText = snap.customer.city;
+            document.getElementById('inv-state').innerText = snap.customer.state;
+            document.getElementById('inv-pin').innerText = snap.customer.pin;
+            document.getElementById('inv-phone').innerText = snap.customer.phone;
+            document.getElementById('inv-email').innerText = snap.customer.email;
+
+            document.getElementById('inv-items').innerHTML = snap.items.map((item, index) => `
+                <tr class="border-b border-gray-100">
+                    <td class="py-3 text-gray-500">${index + 1}</td>
+                    <td class="py-3 text-gray-900 font-medium">${item.name}</td>
+                    <td class="py-3 text-gray-600 text-center">${item.size === null ? '—' : item.size}</td>
+                    <td class="py-3 text-gray-600 text-center">${item.quantity}</td>
+                    <td class="py-3 text-gray-600 text-right">${formatMoney(item.price)}</td>
+                    <td class="py-3 text-gray-900 font-medium text-right">${formatMoney(item.price * item.quantity)}</td>
+                </tr>
+            `).join('');
+
+            document.getElementById('inv-subtotal').innerText = formatMoney(snap.totals.subtotal);
+            document.getElementById('inv-shipping').innerText = formatMoney(snap.totals.shipping);
+            document.getElementById('inv-gst').innerText = formatMoney(snap.totals.gst);
+            document.getElementById('inv-total').innerText = formatMoney(snap.totals.total);
+
+            document.getElementById('inv-payment-method').innerText = snap.paymentMethod;
+            document.getElementById('inv-payment-status').innerText = snap.paymentStatus;
+            
+            // Adjust status color
+            const statusEl = document.getElementById('inv-payment-status');
+            if (snap.paymentStatus === 'Paid') {
+                statusEl.className = "text-green-600 font-bold";
+            } else {
+                statusEl.className = "text-brand-900 font-bold";
+            }
+
+            document.getElementById('invoice-modal').classList.remove('hidden');
+        }
+
+        function closeInvoice() {
+            document.getElementById('invoice-modal').classList.add('hidden');
+        }
+
+        // --- Scroll Reveal Logic ---
+        const observer = new IntersectionObserver((entries, obs) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    obs.unobserve(entry.target); 
+                }
+            });
+        }, { root: null, rootMargin: '0px', threshold: 0.15 });
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProducts();
+            initCart();
+            history.scrollRestoration = 'manual';
+            document.getElementById('product-detail-back').addEventListener('click', event => {
+                event.preventDefault();
+                returnToCollection();
+            });
+            document.getElementById('product-detail-add').addEventListener('click', () => purchaseSelectedProduct(false));
+            document.getElementById('product-detail-buy').addEventListener('click', () => purchaseSelectedProduct(true));
+            document.getElementById('product-detail-quantity-decrease').addEventListener('click', () => {
+                productPageQuantity = Math.max(1, productPageQuantity - 1);
+                document.getElementById('product-detail-quantity').textContent = String(productPageQuantity);
+            });
+            document.getElementById('product-detail-quantity-increase').addEventListener('click', () => {
+                productPageQuantity += 1;
+                document.getElementById('product-detail-quantity').textContent = String(productPageQuantity);
+            });
+            document.getElementById('product-detail-page').addEventListener('click', event => {
+                const anchor = event.target.closest('a[href="#collection"], a[href="#home"], a[href="#about"]');
+                if (!anchor || !isProductPageVisible) return;
+                if (anchor.id === 'product-detail-back') return;
+                productPageTrigger = null;
+                if (anchor.getAttribute('href') === '#collection') collectionScrollPosition = 0;
+            });
+            document.getElementById('navbar').addEventListener('click', event => {
+                const anchor = event.target.closest('a[href="#collection"], a[href="#home"], a[href="#about"]');
+                if (!anchor || !isProductPageVisible) return;
+                productPageTrigger = null;
+                if (anchor.getAttribute('href') === '#collection') collectionScrollPosition = 0;
+            });
+            window.addEventListener('hashchange', renderRouteFromLocation);
+            if (location.hash) renderRouteFromLocation();
+            
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+            const navbar = document.getElementById('navbar');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 20) navbar.classList.add('shadow-sm');
+                else navbar.classList.remove('shadow-sm');
+            });
+        });
+    </script>
+</body>
+</html>
